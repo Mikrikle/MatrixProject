@@ -3,9 +3,9 @@
 #include <locale.h>
 
 void rowsSwitch(int ROWS, int COLS, int **matrix, int firstrow, int secondrow);
-void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, int mod);
-void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int firstrow, int secondrow, int num, int mod);
-void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, int mod);
+void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, char mod);
+void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int firstrow, int secondrow, int num, char mod);
+void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, char mod);
 void matrixPlusMatrix(int ROWS, int COLS, int **matrix);
 void matrixChangeSigns(int ROWS, int COLS, int **matrix);
 void matrixFill(int ROWS, int COLS, int **matrix);
@@ -56,10 +56,10 @@ int main()
 
 		printf("\n\nДействия:\n");
 		printf(" 1 - Поменять строки местами ( поменять первую и вторую строки '1 2' )\n");
-		printf(" 2 - Прибавить к строке другую, умноженную или деленную на число ( четвертую строку умножить на -3 и добавить во 2 '4 2 -3 2' )\n");
-		printf(" 3 - Умножить или резделить строку на число ( умножить вторую строку на 6 '2 2 6' )\n");
+		printf(" 2 - Прибавить к строке другую, умноженную или деленную на число ( четвертую строку умножить на -3 и добавить во 2 '4*-3 2' )\n");
+		printf(" 3 - Умножить или резделить строку на число ( умножить вторую строку на 6 '2*6' )\n");
 		printf(" 4 - Транспонирование матрицы ( столбцы поменются со строками )\n");
-		printf(" 5 - Умножить или разделить матрицу на число ( разделить на 5 '1 5' )\n");
+		printf(" 5 - Умножить или разделить матрицу на число ( разделить на 5 '/5' )\n");
 		printf(" 6 - Сложение матриц\n");
 		printf(" 7 - Умножениить матрицу на другую ( C = A * B )\n");
 		printf(" 8 - Получение противоположенной матрицы\n");
@@ -67,34 +67,36 @@ int main()
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
-		int x, y, z, mod;
+		int row1, row2, num, col;
+		char mod;
 		while (loop)
 		{
 			printf("Действие: ");
 			scanf("%d", &input);
 			if (!input)
 				loop = 0;
+			while ((getchar()) != '\n');
 			switch (input)
 			{
 			case 1:
 			{
-				printf("Введите номера строк: ");
-				scanf("%d %d", &x, &y);
-				rowsSwitch(ROWS, COLS, matrix, x - 1, y - 1);
+				printf("<строку №> <поменять со строкой №>: ");
+				scanf("%d %d", &row1, &row2);
+				rowsSwitch(ROWS, COLS, matrix, row1-1, row2-1);
 				break;
 			}
 			case 2:
 			{
-				printf("Введите номер строки действие 1-деление 2-умножение множитель и к какой строке прибавить: ");
-				scanf("%d %d %d %d", &x, &mod, &z, &y);
-				rowPLusRowXnumber(ROWS, COLS, matrix, x-1, z, y-1, mod);
+				printf("<строку №><* или /><на число> <и добавить в строкe №>: ");
+				scanf("%d%c%d %d", &row1, &mod, &num, &row2);
+				rowPLusRowXnumber(ROWS, COLS, matrix, row1-1, num, row2-1, mod);
 				break;
 			}
 			case 3:
 			{
-				printf("Введите действие 1-деление 2-умножение номер строки и множитель: ");
-				scanf("%d %d %d", &mod, &x, &z);
-				rowsMultiply(ROWS, COLS, matrix, x - 1, z, mod);
+				printf("<строку №><* или /><на число>: ");
+				scanf("%d%c%d", &row1, &mod, &num);
+				rowsMultiply(ROWS, COLS, matrix, row1-1, num, mod);
 				break;
 			}
 			case 4:
@@ -104,9 +106,9 @@ int main()
 			}
 			case 5:
 			{
-				printf("Введите действие 1-деление 2-умножение и число: ");
-				scanf("%d %d",&mod, &z);
-				matrixMultiplyByNumber(ROWS, COLS, matrix, z, mod);
+				printf("<* или /><на число>: ");
+				scanf("%c%d",&mod, &num);
+				matrixMultiplyByNumber(ROWS, COLS, matrix, num, mod);
 				break;
 			}
 			case 6:
@@ -126,9 +128,9 @@ int main()
 			}
 			case 9:
 			{
-				printf("Введите номер строки, колонны и новое значение: ");
-				scanf("%d %d %d", &x, &y, &z);
-				matrixRedactElem(COLS, ROWS, x - 1, y - 1, matrix, z);
+				printf("<в строке №> <в колонне №> <элемент станет равен чслу>: ");
+				scanf("%d %d %d", &row1, &col, &num);
+				matrixRedactElem(COLS, ROWS, matrix, row1-1, col-1, num);
 				break;
 			}
 			default:
@@ -208,14 +210,14 @@ void rowsSwitch(int ROWS, int COLS, int **matrix, int fromrow, int torow)
 		printf("ОШИБКА: обращение к несуществующей строке\n");
 }
 
-void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, int mod)
+void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, char mod)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, row, 0))
 	{
 		if (num != 0)
 		{
 			for (int i = 0; i < COLS; i++)
-				matrix[row][i] = mod==2?(num * matrix[row][i]):(matrix[row][i] / num);
+				matrix[row][i] = mod=='*'?(num * matrix[row][i]):(matrix[row][i] / num);
 		}
 		else
 			printf("ОШИБКА: множитель не может быть равен 0\n");
@@ -224,14 +226,14 @@ void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, int mod)
 		printf("ОШИБКА: обращение к несуществующей строке\n");
 }
 
-void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int secondrow, int num, int firstrow, int mod)
+void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int secondrow, int num, int firstrow, char mod)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, firstrow, 0) && CheckRowsAndColsInput(ROWS, COLS, secondrow, 0))
 	{
 		if (num != 0)
 		{
 			for (int i = 0; i < COLS; i++)
-				matrix[firstrow][i] += mod==2?(matrix[secondrow][i]*num):(matrix[secondrow][i]/num);
+				matrix[firstrow][i] += mod=='*'?(matrix[secondrow][i]*num):(matrix[secondrow][i]/num);
 		}
 		else
 			printf("ОШИБКА: множитель не может быть равен 0\n");
@@ -258,13 +260,13 @@ int **matrixTranspose(int *ROWS, int *COLS, int **matrix)
 	return newmatrix;
 }
 
-void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, int mod)
+void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, char mod)
 {
 	if (num != 0)
 	{
 		for (int row = 0; row < ROWS; row++)
 			for (int col = 0; col < COLS; col++)
-				matrix[row][col] = mod==2?(num * matrix[row][col]):(matrix[row][col] / num);
+				matrix[row][col] = mod=='*'?(num * matrix[row][col]):(matrix[row][col] / num);
 	}
 	else
 		printf("ОШИБКА: множитель не может быть равен 0\n");
@@ -341,7 +343,10 @@ int **matrixMultiply(int leftROWS, int *COLS, int **leftmatrix)
 int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
 {
 	if (r < 0 || r >= ROWS || c < 0 || c >= ROWS)
-		return 0;
+		{
+			printf("строка: %d из %d , столбец: %d из %d\n", r, ROWS, c, COLS);
+			return 0;
+		}
 	else
 		return 1;
 }
