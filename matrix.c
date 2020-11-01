@@ -1,26 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <math.h>
 
-void rowsSwitch(int ROWS, int COLS, int **matrix, int firstrow, int secondrow);
-void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, char mod);
-void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int firstrow, int secondrow, int num, char mod);
-void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, char mod);
-void matrixPlusMatrix(int ROWS, int COLS, int **matrix);
-void matrixChangeSigns(int ROWS, int COLS, int **matrix);
-void matrixFill(int ROWS, int COLS, int **matrix);
-void matrixDelete(int ROWS, int **matrix);
-void matrixRedactElem(int ROWS, int COLS, int **matrix, int ROW, int COL, int num);
-void matrixPrint(int ROWS, int COLS, int **matrix);
-int **matrixMultiply(int ROWS, int *COLS, int **matrix);
-int **matrixCreate(int ROWS, int COLS);
-int **matrixTranspose(int *ROWS, int *COLS, int **matrix);
+void rowsSwitch(int ROWS, int COLS, double **matrix, int firstrow, int secondrow);
+void rowsMultiply(int ROWS, int COLS, double **matrix, int row, double num, char mod);
+void rowPLusRowXnumber(int ROWS, int COLS, double **matrix, int secondrow, double num, int firstrow, char mod);
+void matrixMultiplyByNumber(int ROWS, int COLS, double **matrix, double num, char mod);
+void matrixPlusMatrix(int ROWS, int COLS, double **matrix);
+void matrixChangeSigns(int ROWS, int COLS, double **matrix);
+void matrixFill(int ROWS, int COLS, double **matrix);
+void matrixDelete(int ROWS, double **matrix);
+void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, double num);
+void matrixPrint(int ROWS, int COLS, double **matrix);
+double **matrixMultiply(int ROWS, int *COLS, double **matrix);
+double **matrixCreate(int ROWS, int COLS);
+double **matrixTranspose(int *ROWS, int *COLS, double **matrix);
 
 int main()
 {
 	setlocale(LC_ALL, "ru_RU.UTF-8");
 	printf("------------------\n");
-
 	int ROWS = 0, COLS = 0;
 	while (ROWS <= 0 || COLS <= 0)
 	{
@@ -32,7 +32,7 @@ int main()
 			printf("Повторите попытку\n");
 	}
 
-	int **matrix = matrixCreate(ROWS, COLS);
+	double **matrix = matrixCreate(ROWS, COLS);
 	if (matrix != NULL)
 	{
 		for (int i = 0; i < ROWS; i++)
@@ -44,8 +44,8 @@ int main()
 			printf("| ");
 			for (int col = 0; col < COLS; col++)
 			{
-				matrix[row][col] = 0;
-				printf("%d ", matrix[row][col]);
+				matrix[row][col] = 0.0;
+				printf("%.0lf ", matrix[row][col]);
 			}
 			printf("|\n");
 		}
@@ -59,7 +59,7 @@ int main()
 		printf(" 2 - Прибавить к строке другую, умноженную или деленную на число ( четвертую строку умножить на -3 и добавить во 2 '4*-3 2' )\n");
 		printf(" 3 - Умножить или резделить строку на число ( умножить вторую строку на 6 '2*6' )\n");
 		printf(" 4 - Транспонирование матрицы ( столбцы поменются со строками )\n");
-		printf(" 5 - Умножить или разделить матрицу на число ( разделить на 5 '/5' )\n");
+		printf(" 5 - Умножить или разделить матрицу на число ( разделить на 5.2 '/5.2' )\n");
 		printf(" 6 - Сложение матриц\n");
 		printf(" 7 - Умножениить матрицу на другую ( C = A * B )\n");
 		printf(" 8 - Получение противоположенной матрицы\n");
@@ -67,7 +67,8 @@ int main()
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
-		int row1, row2, num, col;
+		int row1, row2, col;
+		double num;
 		char mod;
 		while (loop)
 		{
@@ -75,28 +76,28 @@ int main()
 			scanf("%d", &input);
 			if (!input)
 				loop = 0;
-			while ((getchar()) != '\n');
+			while((getchar()) != '\n');
 			switch (input)
 			{
 			case 1:
 			{
 				printf("<строку №> <поменять со строкой №>: ");
 				scanf("%d %d", &row1, &row2);
-				rowsSwitch(ROWS, COLS, matrix, row1-1, row2-1);
+				rowsSwitch(ROWS, COLS, matrix, row1 - 1, row2 - 1);
 				break;
 			}
 			case 2:
 			{
 				printf("<строку №><* или /><на число> <и добавить в строкe №>: ");
-				scanf("%d%c%d %d", &row1, &mod, &num, &row2);
-				rowPLusRowXnumber(ROWS, COLS, matrix, row1-1, num, row2-1, mod);
+				scanf("%d%c%lf %d", &row1, &mod, &num, &row2);
+				rowPLusRowXnumber(ROWS, COLS, matrix, row1 - 1, num, row2 - 1, mod);
 				break;
 			}
 			case 3:
 			{
 				printf("<строку №><* или /><на число>: ");
-				scanf("%d%c%d", &row1, &mod, &num);
-				rowsMultiply(ROWS, COLS, matrix, row1-1, num, mod);
+				scanf("%d%c%lf", &row1, &mod, &num);
+				rowsMultiply(ROWS, COLS, matrix, row1 - 1, num, mod);
 				break;
 			}
 			case 4:
@@ -107,7 +108,7 @@ int main()
 			case 5:
 			{
 				printf("<* или /><на число>: ");
-				scanf("%c%d",&mod, &num);
+				scanf("%c%lf", &mod, &num);
 				matrixMultiplyByNumber(ROWS, COLS, matrix, num, mod);
 				break;
 			}
@@ -129,8 +130,8 @@ int main()
 			case 9:
 			{
 				printf("<в строке №> <в колонне №> <элемент станет равен чслу>: ");
-				scanf("%d %d %d", &row1, &col, &num);
-				matrixRedactElem(COLS, ROWS, matrix, row1-1, col-1, num);
+				scanf("%d %d %lf", &row1, &col, &num);
+				matrixRedactElem(COLS, ROWS, matrix, row1 - 1, col - 1, num);
 				break;
 			}
 			default:
@@ -150,15 +151,15 @@ int main()
 	return 0;
 }
 
-int **matrixCreate(int ROWS, int COLS)
+double **matrixCreate(int ROWS, int COLS)
 {
-	int **matrix = (int **)malloc(sizeof(int *) * ROWS);
+	double **matrix = (double **)malloc(sizeof(double *) * ROWS);
 	for (int i = 0; i < ROWS; i++)
-		matrix[i] = (int *)malloc(sizeof(int) * COLS);
+		matrix[i] = (double *)malloc(sizeof(double) * COLS);
 	return matrix;
 }
 
-void matrixFill(int ROWS, int COLS, int **matrix)
+void matrixFill(int ROWS, int COLS, double **matrix)
 {
 	printf("Заполните матрицу\n");
 	for (int row = 0; row < ROWS; row++)
@@ -166,37 +167,42 @@ void matrixFill(int ROWS, int COLS, int **matrix)
 		printf("-Строка №%d-\n", row + 1);
 		for (int col = 0; col < COLS; col++)
 		{
-			printf("Элемент №%d = ", col + 1), scanf("%d", &matrix[row][col]);
+			printf("Элемент №%d = ", col + 1), scanf("%lf", &matrix[row][col]);
 		}
 	}
 	printf("\n");
 }
 
-void matrixPrint(int ROWS, int COLS, int **matrix)
+void matrixPrint(int ROWS, int COLS, double **matrix)
 {
+	double x, i;
 	for (int row = 0; row < ROWS; row++)
 	{
 		printf("| ");
 		for (int col = 0; col < COLS; col++)
 		{
-			printf("%3d ", matrix[row][col]);
+			x = modfl(matrix[row][col], &i);
+			if (x==0)
+				printf("%.0lf\t", matrix[row][col]);
+			else
+				printf("%.1lf\t", matrix[row][col]);
 		}
 		printf("|\n");
 	}
 }
 
-void matrixDelete(int ROWS, int **matrix)
+void matrixDelete(int ROWS, double **matrix)
 {
 	for (int i = 0; i < ROWS; i++)
 		free(matrix[i]);
 	free(matrix);
 }
 
-void rowsSwitch(int ROWS, int COLS, int **matrix, int fromrow, int torow)
+void rowsSwitch(int ROWS, int COLS, double **matrix, int fromrow, int torow)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, fromrow, 0) && CheckRowsAndColsInput(ROWS, COLS, torow, 0))
 	{
-		int *temp = (int *)malloc(sizeof(int) * COLS);
+		int *temp = (double *)malloc(sizeof(double) * COLS);
 		int i;
 		for (i = 0; i < COLS; i++)
 			temp[i] = matrix[torow][i];
@@ -210,14 +216,14 @@ void rowsSwitch(int ROWS, int COLS, int **matrix, int fromrow, int torow)
 		printf("ОШИБКА: обращение к несуществующей строке\n");
 }
 
-void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, char mod)
+void rowsMultiply(int ROWS, int COLS, double **matrix, int row, double num, char mod)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, row, 0))
 	{
 		if (num != 0)
 		{
 			for (int i = 0; i < COLS; i++)
-				matrix[row][i] = mod=='*'?(num * matrix[row][i]):(matrix[row][i] / num);
+				matrix[row][i] = mod == '*' ? (num * matrix[row][i]) : (matrix[row][i] / num);
 		}
 		else
 			printf("ОШИБКА: множитель не может быть равен 0\n");
@@ -226,14 +232,14 @@ void rowsMultiply(int ROWS, int COLS, int **matrix, int row, int num, char mod)
 		printf("ОШИБКА: обращение к несуществующей строке\n");
 }
 
-void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int secondrow, int num, int firstrow, char mod)
+void rowPLusRowXnumber(int ROWS, int COLS, double **matrix, int secondrow, double num, int firstrow, char mod)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, firstrow, 0) && CheckRowsAndColsInput(ROWS, COLS, secondrow, 0))
 	{
 		if (num != 0)
 		{
 			for (int i = 0; i < COLS; i++)
-				matrix[firstrow][i] += mod=='*'?(matrix[secondrow][i]*num):(matrix[secondrow][i]/num);
+				matrix[firstrow][i] += mod == '*' ? (matrix[secondrow][i] * num) : (matrix[secondrow][i] / num);
 		}
 		else
 			printf("ОШИБКА: множитель не может быть равен 0\n");
@@ -242,9 +248,9 @@ void rowPLusRowXnumber(int ROWS, int COLS, int **matrix, int secondrow, int num,
 		printf("ОШИБКА: обращение к несуществующей строке\n");
 }
 
-int **matrixTranspose(int *ROWS, int *COLS, int **matrix)
+double **matrixTranspose(int *ROWS, int *COLS, double **matrix)
 {
-	int **newmatrix = matrixCreate(*COLS, *ROWS);
+	double **newmatrix = matrixCreate(*COLS, *ROWS);
 
 	for (int row = 0; row < *ROWS; row++)
 	{
@@ -260,41 +266,41 @@ int **matrixTranspose(int *ROWS, int *COLS, int **matrix)
 	return newmatrix;
 }
 
-void matrixMultiplyByNumber(int ROWS, int COLS, int **matrix, int num, char mod)
+void matrixMultiplyByNumber(int ROWS, int COLS, double **matrix, double num, char mod)
 {
 	if (num != 0)
 	{
 		for (int row = 0; row < ROWS; row++)
 			for (int col = 0; col < COLS; col++)
-				matrix[row][col] = mod=='*'?(num * matrix[row][col]):(matrix[row][col] / num);
+				matrix[row][col] = mod == '*' ? (num * matrix[row][col]) : (matrix[row][col] / num);
 	}
 	else
 		printf("ОШИБКА: множитель не может быть равен 0\n");
 }
 
-void matrixPlusMatrix(int ROWS, int COLS, int **matrix)
+void matrixPlusMatrix(int ROWS, int COLS, double **matrix)
 {
-	int x;
+	double x;
 	printf("Заполните матрицу с которой выполнится сложение\n");
 	for (int row = 0; row < ROWS; row++)
 	{
 		printf("-Строка №%d-\n", row + 1);
 		for (int col = 0; col < COLS; col++)
 		{
-			printf("Элемент №%d = ", col + 1), scanf("%d", &x);
+			printf("Элемент №%d = ", col + 1), scanf("%lf", &x);
 			matrix[row][col] += x;
 		}
 	}
 }
 
-void matrixChangeSigns(int ROWS, int COLS, int **matrix)
+void matrixChangeSigns(int ROWS, int COLS, double **matrix)
 {
 	for (int row = 0; row < ROWS; row++)
 		for (int col = 0; col < COLS; col++)
 			matrix[row][col] = -matrix[row][col];
 }
 
-void matrixRedactElem(int ROWS, int COLS, int **matrix, int ROW, int COL, int num)
+void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, double num)
 {
 	if (CheckRowsAndColsInput(ROWS, COLS, ROW, COL))
 		matrix[ROW][COL] = num;
@@ -302,7 +308,7 @@ void matrixRedactElem(int ROWS, int COLS, int **matrix, int ROW, int COL, int nu
 		printf("ОШИБКА: обращение к несуществующему элементу\n");
 }
 
-int **matrixMultiply(int leftROWS, int *COLS, int **leftmatrix)
+double **matrixMultiply(int leftROWS, int *COLS, double **leftmatrix)
 {
 	int rightROWS = *COLS;
 	int rightCOLS = 0;
@@ -314,7 +320,7 @@ int **matrixMultiply(int leftROWS, int *COLS, int **leftmatrix)
 		if (rightCOLS <= 0)
 			printf("Неверный ввод\n");
 	}
-	int **rightmatrix = matrixCreate(rightROWS, rightCOLS);
+	double **rightmatrix = matrixCreate(rightROWS, rightCOLS);
 	matrixFill(rightROWS, rightCOLS, rightmatrix);
 
 	matrixPrint(leftROWS, *COLS, leftmatrix);
@@ -322,8 +328,8 @@ int **matrixMultiply(int leftROWS, int *COLS, int **leftmatrix)
 	matrixPrint(rightROWS, rightCOLS, rightmatrix);
 	printf("\t\t=\n");
 
-	int **resultmatrix = matrixCreate(leftROWS, rightCOLS);
-	int c = 0;
+	double **resultmatrix = matrixCreate(leftROWS, rightCOLS);
+	double c = 0;
 	for (int row = 0; row < leftROWS; row++)
 	{
 		for (int col = 0; col < rightCOLS; col++)
@@ -343,10 +349,10 @@ int **matrixMultiply(int leftROWS, int *COLS, int **leftmatrix)
 int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
 {
 	if (r < 0 || r >= ROWS || c < 0 || c >= ROWS)
-		{
-			printf("строка: %d из %d , столбец: %d из %d\n", r, ROWS, c, COLS);
-			return 0;
-		}
+	{
+		printf("строка: %d из %d , столбец: %d из %d\n", r, ROWS, c, COLS);
+		return 0;
+	}
 	else
 		return 1;
 }
