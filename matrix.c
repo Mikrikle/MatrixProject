@@ -76,7 +76,7 @@ int main()
 			scanf("%d", &input);
 			if (!input)
 				loop = 0;
-			while((getchar()) != '\n');
+			while ((getchar()) != '\n');
 			switch (input)
 			{
 			case 1:
@@ -182,7 +182,7 @@ void matrixPrint(int ROWS, int COLS, double **matrix)
 		for (int col = 0; col < COLS; col++)
 		{
 			x = modfl(matrix[row][col], &i);
-			if (x==0)
+			if (x == 0)
 				printf("%.0lf\t", matrix[row][col]);
 			else
 				printf("%.1lf\t", matrix[row][col]);
