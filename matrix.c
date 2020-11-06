@@ -13,6 +13,8 @@ void matrixFill(int ROWS, int COLS, double **matrix);
 void matrixDelete(int ROWS, double **matrix);
 void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, double num);
 void matrixPrint(int ROWS, int COLS, double **matrix);
+void matrixDeterminant(int ROWS, int COLS, double **matrix);
+void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN);
 double **matrixMultiply(int ROWS, int *COLS, double **matrix);
 double **matrixCreate(int ROWS, int COLS);
 double **matrixTranspose(int *ROWS, int *COLS, double **matrix);
@@ -64,6 +66,8 @@ int main()
 		printf(" 7 - Умножениить матрицу на другую ( C = A * B )\n");
 		printf(" 8 - Получение противоположенной матрицы\n");
 		printf(" 9 - Редактировать элемент матрицы ( поменять третье число в первой строке на 27 '1 3 27')\n");
+		// A^-1 обратная матрица
+		printf(" 10 - Найти опредилитель матрицы ( Матрица должна быть квадратной )\n");
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
@@ -76,7 +80,8 @@ int main()
 			scanf("%d", &input);
 			if (!input)
 				loop = 0;
-			while ((getchar()) != '\n');
+			while ((getchar()) != '\n')
+				;
 			switch (input)
 			{
 			case 1:
@@ -132,6 +137,11 @@ int main()
 				printf("<в строке №> <в колонне №> <элемент станет равен чслу>: ");
 				scanf("%d %d %lf", &row1, &col, &num);
 				matrixRedactElem(COLS, ROWS, matrix, row1 - 1, col - 1, num);
+				break;
+			}
+			case 10:
+			{
+				matrixDeterminant(ROWS, COLS, matrix);
 				break;
 			}
 			default:
@@ -346,6 +356,20 @@ double **matrixMultiply(int leftROWS, int *COLS, double **leftmatrix)
 	return resultmatrix;
 }
 
+void matrixDeterminant(int ROWS, int COLS, double **matrix)
+{
+	if (ROWS == COLS)
+	{
+		double determinant = 0.0;
+		double multiplier = 1.0;
+		int sign = 0;
+		findDeterminant(ROWS, matrix, &determinant, &multiplier, &sign);
+		printf("\nОпределитель: %.1lf\n", determinant);
+	}
+	else
+		printf("Матрица не квадратная\n");
+}
+
 int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
 {
 	if (r < 0 || r >= ROWS || c < 0 || c >= ROWS)
@@ -355,4 +379,53 @@ int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
 	}
 	else
 		return 1;
+}
+
+void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN)
+{
+	if (SIZE > 2)
+	{
+		int newrow, newcol;
+
+		double **newmatrix = matrixCreate(SIZE - 1, SIZE - 1);
+
+		for (int i = 0; i < SIZE; i++)
+		{
+			newrow = 0;
+			newcol = 0;
+			for (int row = 0; row < SIZE; row++)
+			{
+				for (int col = 0; col < SIZE; col++)
+				{
+					if (row != 0 && col != i)
+					{
+						newmatrix[newrow][newcol] = matrix[row][col];
+						newcol++;
+						if (newcol == SIZE - 1)
+						{
+							newcol = 0;
+							newrow++;
+						}
+					}
+				}
+			}
+			*MULTIPLIER = matrix[0][i];
+			findDeterminant(SIZE - 1, newmatrix, DETERMINANT, MULTIPLIER, SIGN);
+		}
+		matrixDelete(SIZE - 1, newmatrix);
+	}
+	else
+	{
+		double value = (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+		if (*SIGN == 0)
+		{
+			*DETERMINANT += (value * (*MULTIPLIER));
+			*SIGN = 1;
+		}
+		else
+		{
+			*DETERMINANT -= (value * (*MULTIPLIER));
+			*SIGN = 0;
+		}
+	}
 }
