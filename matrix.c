@@ -80,12 +80,15 @@ int main()
 		{
 			printf("Действие: ");
 			scanf("%d", &input);
-			if (!input)
-				loop = 0;
 			while ((getchar()) != '\n')
 				;
 			switch (input)
 			{
+			case 0:
+			{
+				loop = 0;
+				break;
+			}
 			case 1:
 			{
 				printf("<строку №> <поменять со строкой №>: ");
@@ -384,7 +387,7 @@ double **matrixInvert(int ROWS, int COLS, double **matrix)
 	int sign = 0;
 	int SIZE = ROWS;
 	findDeterminant(ROWS, matrix, &determinant, &multiplier, &sign);
-	if (determinant == 0 || ROWS != COLS) 
+	if (determinant == 0 || ROWS != COLS)
 	{
 		printf("Обратной матрицы не существует, определитель равен 0\n");
 		return matrix;
@@ -399,8 +402,15 @@ double **matrixInvert(int ROWS, int COLS, double **matrix)
 			multiplier = 1.0;
 			sign = 0;
 			findMinor(SIZE, matrix, newmatrix, row, col);
-			findDeterminant(SIZE - 1, newmatrix, &determinant, &multiplier, &sign);
-			minormatrix[row][col] = determinant;
+			if (SIZE > 2)
+			{
+				findDeterminant(SIZE - 1, newmatrix, &determinant, &multiplier, &sign);
+				minormatrix[row][col] = determinant;
+			}
+			else
+			{
+				minormatrix[row][col] = newmatrix[0][0];
+			}
 		}
 	}
 	matrixDelete(SIZE - 1, newmatrix);
