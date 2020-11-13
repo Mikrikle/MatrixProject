@@ -15,6 +15,8 @@ void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, dou
 void matrixPrint(int ROWS, int COLS, double **matrix);
 void matrixDeterminant(int ROWS, int COLS, double **matrix);
 void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN);
+void findMinor(int SIZE, double **matrix, double **newmatrix, int row, int col);
+double **matrixInvert(int ROWS, int COLS, double **matrix);
 double **matrixMultiply(int ROWS, int *COLS, double **matrix);
 double **matrixCreate(int ROWS, int COLS);
 double **matrixTranspose(int *ROWS, int *COLS, double **matrix);
@@ -66,8 +68,8 @@ int main()
 		printf(" 7 - Умножениить матрицу на другую ( C = A * B )\n");
 		printf(" 8 - Получение противоположенной матрицы\n");
 		printf(" 9 - Редактировать элемент матрицы ( поменять третье число в первой строке на 27 '1 3 27')\n");
-		// A^-1 обратная матрица
 		printf(" 10 - Найти опредилитель матрицы ( Матрица должна быть квадратной )\n");
+		printf(" 11 - Найти обратную матрицу A^-1 ( Матрица должна быть квадратной )\n");
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
@@ -142,6 +144,11 @@ int main()
 			case 10:
 			{
 				matrixDeterminant(ROWS, COLS, matrix);
+				break;
+			}
+			case 11:
+			{
+				matrix = matrixInvert(ROWS, COLS, matrix);
 				break;
 			}
 			default:
@@ -334,9 +341,9 @@ double **matrixMultiply(int leftROWS, int *COLS, double **leftmatrix)
 	matrixFill(rightROWS, rightCOLS, rightmatrix);
 
 	matrixPrint(leftROWS, *COLS, leftmatrix);
-	printf("\t\tX\n");
+	printf(" X \n");
 	matrixPrint(rightROWS, rightCOLS, rightmatrix);
-	printf("\t\t=\n");
+	printf(" = \n");
 
 	double **resultmatrix = matrixCreate(leftROWS, rightCOLS);
 	double c = 0;
@@ -370,46 +377,71 @@ void matrixDeterminant(int ROWS, int COLS, double **matrix)
 		printf("Матрица не квадратная\n");
 }
 
-int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
+double **matrixInvert(int ROWS, int COLS, double **matrix)
 {
-	if (r < 0 || r >= ROWS || c < 0 || c >= ROWS)
+	double determinant = 0.0;
+	double multiplier = 1.0;
+	int sign = 0;
+	int SIZE = ROWS;
+	findDeterminant(ROWS, matrix, &determinant, &multiplier, &sign);
+	if (determinant == 0 || ROWS != COLS) 
 	{
-		printf("строка: %d из %d , столбец: %d из %d\n", r, ROWS, c, COLS);
-		return 0;
+		printf("Обратной матрицы не существует, определитель равен 0\n");
+		return matrix;
 	}
-	else
-		return 1;
+	double **minormatrix = matrixCreate(SIZE, SIZE);
+	double **newmatrix = matrixCreate(SIZE - 1, SIZE - 1);
+	for (int row = 0; row < SIZE; row++)
+	{
+		for (int col = 0; col < SIZE; col++)
+		{
+			determinant = 0.0;
+			multiplier = 1.0;
+			sign = 0;
+			findMinor(SIZE, matrix, newmatrix, row, col);
+			findDeterminant(SIZE - 1, newmatrix, &determinant, &multiplier, &sign);
+			minormatrix[row][col] = determinant;
+		}
+	}
+	matrixDelete(SIZE - 1, newmatrix);
+	for (int row = 0; row < SIZE; row++)
+		for (int col = 0; col < SIZE; col++)
+			if ((row + col) % 2 != 0)
+				minormatrix[row][col] = -minormatrix[row][col];
+	double **invertmatrix = matrixTranspose(&ROWS, &COLS, minormatrix);
+	return invertmatrix;
+}
+
+void findMinor(int SIZE, double **matrix, double **newmatrix, int i, int j)
+{
+	int newrow = 0, newcol = 0;
+	for (int row = 0; row < SIZE; row++)
+	{
+		for (int col = 0; col < SIZE; col++)
+		{
+			if (row != i && col != j)
+			{
+				newmatrix[newrow][newcol] = matrix[row][col];
+				newcol++;
+				if (newcol == SIZE - 1)
+				{
+					newcol = 0;
+					newrow++;
+				}
+			}
+		}
+	}
 }
 
 void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN)
 {
 	if (SIZE > 2)
 	{
-		int newrow, newcol;
-
 		double **newmatrix = matrixCreate(SIZE - 1, SIZE - 1);
-
-		for (int i = 0; i < SIZE; i++)
+		for (int j = 0; j < SIZE; j++)
 		{
-			newrow = 0;
-			newcol = 0;
-			for (int row = 0; row < SIZE; row++)
-			{
-				for (int col = 0; col < SIZE; col++)
-				{
-					if (row != 0 && col != i)
-					{
-						newmatrix[newrow][newcol] = matrix[row][col];
-						newcol++;
-						if (newcol == SIZE - 1)
-						{
-							newcol = 0;
-							newrow++;
-						}
-					}
-				}
-			}
-			*MULTIPLIER = matrix[0][i];
+			findMinor(SIZE, matrix, newmatrix, 0, j);
+			*MULTIPLIER = matrix[0][j];
 			findDeterminant(SIZE - 1, newmatrix, DETERMINANT, MULTIPLIER, SIGN);
 		}
 		matrixDelete(SIZE - 1, newmatrix);
@@ -428,4 +460,15 @@ void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MUL
 			*SIGN = 0;
 		}
 	}
+}
+
+int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
+{
+	if (r < 0 || r >= ROWS || c < 0 || c >= ROWS)
+	{
+		printf("строка: %d из %d , столбец: %d из %d\n", r, ROWS, c, COLS);
+		return 0;
+	}
+	else
+		return 1;
 }
