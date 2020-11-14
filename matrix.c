@@ -14,9 +14,9 @@ void matrixDelete(int ROWS, double **matrix);
 void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, double num);
 void matrixPrint(int ROWS, int COLS, double **matrix);
 void matrixDeterminant(int ROWS, int COLS, double **matrix);
-void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN);
 void findMinor(int SIZE, double **matrix, double **newmatrix, int row, int col);
-double **matrixInvert(int ROWS, int COLS, double **matrix);
+double findDeterminant(int SIZE, double **matrix);
+double **matrixInvert(int ROWS, int COLS, double **matrix, int mod);
 double **matrixMultiply(int ROWS, int *COLS, double **matrix);
 double **matrixCreate(int ROWS, int COLS);
 double **matrixTranspose(int *ROWS, int *COLS, double **matrix);
@@ -69,7 +69,7 @@ int main()
 		printf(" 8 - Получение противоположенной матрицы\n");
 		printf(" 9 - Редактировать элемент матрицы ( поменять третье число в первой строке на 27 '1 3 27')\n");
 		printf(" 10 - Найти опредилитель матрицы ( Матрица должна быть квадратной )\n");
-		printf(" 11 - Найти обратную матрицу A^-1 ( Матрица должна быть квадратной )\n");
+		printf(" 11 - Найти обратную матрицу A^-1 и вывести ее на экран. '0' вывести матрицу и множитель '1' сразу выполнить умножение ( Матрица должна быть квадратной )\n");
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
@@ -151,7 +151,9 @@ int main()
 			}
 			case 11:
 			{
-				matrix = matrixInvert(ROWS, COLS, matrix);
+				printf("<1 (вывод A^-1, посчитанная) или 0 (вывод 1/определитель * A^-1)>: ");
+				scanf("%d", &row1);
+				matrix = matrixInvert(ROWS, COLS, matrix, row1);
 				break;
 			}
 			default:
@@ -369,24 +371,15 @@ double **matrixMultiply(int leftROWS, int *COLS, double **leftmatrix)
 void matrixDeterminant(int ROWS, int COLS, double **matrix)
 {
 	if (ROWS == COLS)
-	{
-		double determinant = 0.0;
-		double multiplier = 1.0;
-		int sign = 0;
-		findDeterminant(ROWS, matrix, &determinant, &multiplier, &sign);
-		printf("\nОпределитель: %.1lf\n", determinant);
-	}
+		printf("Определитель = %.1lf\n\n", findDeterminant(ROWS, matrix));
 	else
 		printf("Матрица не квадратная\n");
 }
 
-double **matrixInvert(int ROWS, int COLS, double **matrix)
+double **matrixInvert(int ROWS, int COLS, double **matrix, int mod)
 {
-	double determinant = 0.0;
-	double multiplier = 1.0;
-	int sign = 0;
 	int SIZE = ROWS;
-	findDeterminant(ROWS, matrix, &determinant, &multiplier, &sign);
+	double determinant = findDeterminant(SIZE, matrix);
 	if (determinant == 0 || ROWS != COLS)
 	{
 		printf("Обратной матрицы не существует, определитель равен 0\n");
@@ -398,19 +391,11 @@ double **matrixInvert(int ROWS, int COLS, double **matrix)
 	{
 		for (int col = 0; col < SIZE; col++)
 		{
-			determinant = 0.0;
-			multiplier = 1.0;
-			sign = 0;
 			findMinor(SIZE, matrix, newmatrix, row, col);
 			if (SIZE > 2)
-			{
-				findDeterminant(SIZE - 1, newmatrix, &determinant, &multiplier, &sign);
-				minormatrix[row][col] = determinant;
-			}
+				minormatrix[row][col] = findDeterminant(SIZE - 1, newmatrix);
 			else
-			{
 				minormatrix[row][col] = newmatrix[0][0];
-			}
 		}
 	}
 	matrixDelete(SIZE - 1, newmatrix);
@@ -419,6 +404,10 @@ double **matrixInvert(int ROWS, int COLS, double **matrix)
 			if ((row + col) % 2 != 0)
 				minormatrix[row][col] = -minormatrix[row][col];
 	double **invertmatrix = matrixTranspose(&ROWS, &COLS, minormatrix);
+	if (mod == 0)
+		printf("\n1/%.1lf * \n", determinant);
+	else
+		matrixMultiplyByNumber(SIZE, SIZE, invertmatrix, '*', (1.0 / determinant));
 	return invertmatrix;
 }
 
@@ -443,33 +432,21 @@ void findMinor(int SIZE, double **matrix, double **newmatrix, int i, int j)
 	}
 }
 
-void findDeterminant(int SIZE, double **matrix, double *DETERMINANT, double *MULTIPLIER, int *SIGN)
+double findDeterminant(int SIZE, double **matrix)
 {
-	if (SIZE > 2)
+	if (SIZE > 1)
 	{
 		double **newmatrix = matrixCreate(SIZE - 1, SIZE - 1);
+		double result = 0;
 		for (int j = 0; j < SIZE; j++)
 		{
 			findMinor(SIZE, matrix, newmatrix, 0, j);
-			*MULTIPLIER = matrix[0][j];
-			findDeterminant(SIZE - 1, newmatrix, DETERMINANT, MULTIPLIER, SIGN);
+			result += (findDeterminant(SIZE - 1, newmatrix) * (j % 2 == 0 ? 1 : -1) * matrix[0][j]);
 		}
 		matrixDelete(SIZE - 1, newmatrix);
+		return result;
 	}
-	else
-	{
-		double value = (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
-		if (*SIGN == 0)
-		{
-			*DETERMINANT += (value * (*MULTIPLIER));
-			*SIGN = 1;
-		}
-		else
-		{
-			*DETERMINANT -= (value * (*MULTIPLIER));
-			*SIGN = 0;
-		}
-	}
+	return matrix[0][0];
 }
 
 int CheckRowsAndColsInput(int ROWS, int COLS, int r, int c)
