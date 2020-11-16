@@ -15,26 +15,20 @@ void matrixRedactElem(int ROWS, int COLS, double **matrix, int ROW, int COL, dou
 void matrixPrint(int ROWS, int COLS, double **matrix);
 void matrixDeterminant(int ROWS, int COLS, double **matrix);
 void findMinor(int SIZE, double **matrix, double **newmatrix, int row, int col);
+void setRowsCols(int *ROWS, int *COLS);
 double findDeterminant(int SIZE, double **matrix);
 double **matrixInvert(int ROWS, int COLS, double **matrix, int mod);
 double **matrixMultiply(int ROWS, int *COLS, double **matrix);
 double **matrixCreate(int ROWS, int COLS);
 double **matrixTranspose(int *ROWS, int *COLS, double **matrix);
+double **matrixCopy(int ROWS, int COLS, double **matrix);
 
 int main()
 {
 	setlocale(LC_ALL, "ru_RU.UTF-8");
 	printf("------------------\n");
 	int ROWS = 0, COLS = 0;
-	while (ROWS <= 0 || COLS <= 0)
-	{
-		printf("Количество строк: ");
-		scanf("%d", &ROWS);
-		printf("Количество столбцов: ");
-		scanf("%d", &COLS);
-		if (ROWS <= 0 || COLS <= 0)
-			printf("Повторите попытку\n");
-	}
+	setRowsCols(&ROWS, &COLS);
 
 	double **matrix = matrixCreate(ROWS, COLS);
 	if (matrix != NULL)
@@ -56,6 +50,7 @@ int main()
 		printf("\n");
 		matrixFill(ROWS, COLS, matrix);
 		printf("\n");
+		double **savematrix = matrixCopy(ROWS, COLS, matrix);
 		matrixPrint(ROWS, COLS, matrix);
 
 		printf("\n\nДействия:\n");
@@ -70,6 +65,9 @@ int main()
 		printf(" 9 - Редактировать элемент матрицы ( поменять третье число в первой строке на 27 '1 3 27')\n");
 		printf(" 10 - Найти опредилитель матрицы ( Матрица должна быть квадратной )\n");
 		printf(" 11 - Найти обратную матрицу A^-1 и вывести ее на экран. '0' вывести матрицу и множитель '1' сразу выполнить умножение ( Матрица должна быть квадратной )\n");
+		printf(" 12 - сбросить действия ( вернуться к матрице которую вы изначально ввели )\n");
+		printf(" 13 - создать новую матрицу\n");
+		printf(" 14 - установить текущую матрицу как начальную ( сброс действий будет возвращать к ней )\n");
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
@@ -156,6 +154,25 @@ int main()
 				matrix = matrixInvert(ROWS, COLS, matrix, row1);
 				break;
 			}
+			case 12:
+			{
+				matrix = matrixCopy(ROWS, COLS, savematrix);
+				break;
+			}
+			case 13:
+			{
+				ROWS = 0;
+				COLS = 0;
+				setRowsCols(&ROWS, &COLS);
+				matrix = matrixCreate(ROWS, COLS);
+				matrixFill(ROWS, COLS, matrix);
+				break;
+			}
+			case 14:
+			{
+				savematrix = matrixCopy(ROWS, COLS, matrix);
+				break;
+			}
 			default:
 			{
 				printf("Введите существующее действие\n");
@@ -164,6 +181,7 @@ int main()
 			matrixPrint(ROWS, COLS, matrix);
 		}
 		matrixDelete(ROWS, matrix);
+		matrixDelete(ROWS, savematrix);
 	}
 	else
 	{
@@ -171,6 +189,19 @@ int main()
 		printf("Недостаточно памяти для работы программы\n");
 	}
 	return 0;
+}
+
+void setRowsCols(int *ROWS, int *COLS)
+{
+	while (*ROWS <= 0 || *COLS <= 0)
+	{
+		printf("Количество строк: ");
+		scanf("%d", ROWS);
+		printf("Количество столбцов: ");
+		scanf("%d", COLS);
+		if (*ROWS <= 0 || *COLS <= 0)
+			printf("Повторите попытку\n");
+	}
 }
 
 double **matrixCreate(int ROWS, int COLS)
@@ -218,6 +249,15 @@ void matrixDelete(int ROWS, double **matrix)
 	for (int i = 0; i < ROWS; i++)
 		free(matrix[i]);
 	free(matrix);
+}
+
+double **matrixCopy(int ROWS, int COLS, double **matrix)
+{
+	double **copymatrix = matrixCreate(ROWS, COLS);
+	for (int row = 0; row < ROWS; row++)
+		for (int col = 0; col < COLS; col++)
+			copymatrix[row][col] = matrix[row][col];
+	return copymatrix;
 }
 
 void rowsSwitch(int ROWS, int COLS, double **matrix, int fromrow, int torow)
