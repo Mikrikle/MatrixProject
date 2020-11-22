@@ -51,6 +51,7 @@ int main()
 		matrixFill(ROWS, COLS, matrix);
 		printf("\n");
 		double **savematrix = matrixCopy(ROWS, COLS, matrix);
+		double **prevematrix = matrixCopy(ROWS, COLS, matrix);
 		matrixPrint(ROWS, COLS, matrix);
 
 		printf("\n\nДействия:\n");
@@ -68,6 +69,7 @@ int main()
 		printf(" 12 - сбросить действия ( вернуться к матрице которую вы изначально ввели )\n");
 		printf(" 13 - создать новую матрицу\n");
 		printf(" 14 - установить текущую матрицу как начальную ( сброс действий будет возвращать к ней )\n");
+		printf(" 15 - шаг назад\n");
 		printf(" 0 - Выйти из программы\n");
 
 		int loop = 1, input;
@@ -75,9 +77,11 @@ int main()
 		double num;
 		char mod;
 		while (loop)
-		{
+		{	
 			printf("Действие: ");
 			scanf("%d", &input);
+			if(input!=15)
+				prevematrix = matrixCopy(ROWS, COLS, matrix);
 			while ((getchar()) != '\n')
 				;
 			switch (input)
@@ -173,6 +177,11 @@ int main()
 				savematrix = matrixCopy(ROWS, COLS, matrix);
 				break;
 			}
+			case 15:
+			{
+				matrix = matrixCopy(ROWS, COLS, prevematrix);
+				break;
+			}
 			default:
 			{
 				printf("Введите существующее действие\n");
@@ -182,6 +191,7 @@ int main()
 		}
 		matrixDelete(ROWS, matrix);
 		matrixDelete(ROWS, savematrix);
+		matrixDelete(ROWS, prevematrix);
 	}
 	else
 	{
